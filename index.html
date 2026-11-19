@@ -1,0 +1,1144 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bulletins Gistoux</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
+<style>
+/* Mise en page : barre d'en-tête, étapes numérotées (vraie séquence), panneau de travail centré */
+:root{
+  --paper:#F3F5F8; --card:#FFFFFF; --ink:#1B2130; --muted:#5A6377; --line:#DCE1EA;
+  --accent:#5B2D91; --accent-ink:#FFFFFF; --accent-soft:#EEE7F8;
+  --ok:#2FA84F; --warn:#F28C1B; --bad:#D93A2B; --warn-soft:#FFF3E3; --bad-soft:#FDECEA;
+  --display:"Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --radius:10px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --paper:#13161D; --card:#1B1F28; --ink:#E7EAF1; --muted:#9BA4B7; --line:#2D3340;
+  --accent:#B793EA; --accent-ink:#1B1028; --accent-soft:#2A2139;
+  --warn-soft:#3A2A14; --bad-soft:#3A1A17; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --paper:#13161D; --card:#1B1F28; --ink:#E7EAF1; --muted:#9BA4B7; --line:#2D3340;
+  --accent:#B793EA; --accent-ink:#1B1028; --accent-soft:#2A2139;
+  --warn-soft:#3A2A14; --bad-soft:#3A1A17; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;margin:0}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;margin:0}
+h2{font-size:1.45rem;font-weight:800}
+h3{font-size:1.05rem;font-weight:600}
+p{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+
+.top{background:var(--card);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-block:14px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand h1{font-size:1.35rem;font-weight:800;letter-spacing:-.01em}
+.chip{font-size:.8rem;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 10px;white-space:nowrap}
+.top .ctx{margin-left:auto;font-size:.9rem;color:var(--muted)}
+.top .ctx b{color:var(--ink)}
+
+.steps{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top, 0px);z-index:5}
+.steps .wrap{display:flex;gap:4px;overflow-x:auto;padding-block:0}
+.step{border:0;background:none;padding:12px 12px 10px;border-bottom:3px solid transparent;display:flex;gap:8px;align-items:center;cursor:pointer;white-space:nowrap;color:var(--muted)}
+.step .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;border:1.5px solid currentColor;font-size:.78rem;font-weight:700;font-variant-numeric:tabular-nums}
+.step[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.step[aria-selected="true"] .n{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.step.done .n{background:var(--accent-soft);border-color:var(--accent)}
+
+main{padding-block:24px 64px}
+.panel{display:grid;gap:20px}
+.panel[hidden]{display:none!important}
+.lead{color:var(--muted);max-width:68ch}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;display:grid;gap:12px;min-width:0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.muted{color:var(--muted)}
+.small{font-size:.86rem}
+
+.btn{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:700}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.big{padding:12px 20px;font-size:1.05rem}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.link{border:0;background:none;padding:0;color:var(--accent);text-decoration:underline;font-weight:400}
+
+label.field{display:grid;gap:4px;font-size:.88rem;color:var(--muted);min-width:0}
+label.field > input, label.field > select, label.field > textarea{color:var(--ink)}
+input[type=text],input[type=number],select,textarea{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%;min-width:0}
+textarea{resize:vertical}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.check{display:flex;gap:8px;align-items:flex-start}
+.check input{margin-top:4px}
+
+.drop{border:2px dashed var(--line);border-radius:var(--radius);padding:28px 18px;text-align:center;display:grid;gap:6px;cursor:pointer;background:var(--card)}
+.drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop strong{font-family:var(--display);font-size:1.15rem}
+.drop input{position:absolute;width:1px;height:1px;opacity:0}
+
+.notice{border-radius:8px;padding:10px 14px;font-size:.92rem;display:grid;gap:4px}
+.notice.warn{background:var(--warn-soft)}
+.notice.bad{background:var(--bad-soft)}
+.notice.info{background:var(--accent-soft)}
+.notice ul{margin:0;padding-left:18px}
+
+.tscroll{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--card)}
+table.data{border-collapse:collapse;font-size:.85rem;min-width:100%}
+table.data th,table.data td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:center;vertical-align:middle}
+table.data thead th{font-weight:700;color:var(--muted);font-size:.76rem;line-height:1.2;vertical-align:bottom;min-width:58px;max-width:90px}
+table.data thead tr.dom th{color:var(--ink);font-size:.8rem;border-bottom:3px solid var(--dc,var(--line))}
+table.data th.name,table.data td.name{text-align:left;position:sticky;left:0;background:var(--card);white-space:nowrap;z-index:1;font-weight:700;color:var(--ink);font-size:.86rem}
+table.data td.miss{color:var(--muted)}
+table.data td.err{background:var(--bad-soft)}
+table.data tbody tr:hover td{background:var(--accent-soft)}
+.ball{display:inline-block;vertical-align:middle}
+.src{font-size:.68rem;color:var(--muted);display:block;line-height:1}
+
+table.map{border-collapse:collapse;width:100%;font-size:.9rem}
+table.map th{text-align:left;font-size:.78rem;color:var(--muted);font-weight:700;padding:6px}
+table.map td{padding:5px 6px;border-top:1px solid var(--line);vertical-align:middle}
+table.map td:first-child{color:var(--muted);font-size:.84rem;max-width:260px}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:6px;border:1px solid #0002}
+
+.seasons{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.season{border:2px solid var(--line);border-radius:var(--radius);padding:8px;background:var(--card);cursor:pointer;display:grid;gap:6px;text-align:left}
+.season img{width:100%;height:64px;object-fit:cover;object-position:bottom;border-radius:6px;background:#fff}
+.season[aria-checked="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.season b{font-family:var(--display)}
+.season .tag{font-size:.75rem;color:var(--muted)}
+
+.comments{display:grid;grid-template-columns:260px minmax(0,1fr);gap:16px;align-items:start}
+.slist{display:grid;gap:2px;max-height:70vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:6px}
+.sitem{border:0;background:none;text-align:left;padding:7px 10px;border-radius:6px;cursor:pointer;display:flex;gap:8px;align-items:center}
+.sitem:hover{background:var(--accent-soft)}
+.sitem[aria-current="true"]{background:var(--accent);color:var(--accent-ink)}
+.dot{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--muted);flex:none}
+.dot.on{background:var(--ok);border-color:var(--ok)}
+.editor{display:grid;gap:12px;min-width:0}
+.editor textarea{min-height:260px;font-size:1rem;line-height:1.6}
+.mini{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.82rem;color:var(--muted)}
+.mini span{display:inline-flex;gap:5px;align-items:center}
+@media (max-width:720px){.comments{grid-template-columns:1fr}.slist{max-height:220px}}
+
+.checklist{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.checklist li{display:flex;gap:10px;align-items:flex-start}
+.checklist .st{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:.8rem;font-weight:700;color:#fff}
+.st.ok{background:var(--ok)}.st.warn{background:var(--warn)}.st.bad{background:var(--bad)}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom, 0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:8px;font-weight:700;z-index:50;max-width:calc(100% - 32px)}
+
+/* Mode élève */
+.kid{position:fixed;inset:0;background:var(--paper);z-index:40;overflow:auto;padding:calc(16px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px))}
+.kid .inner{max-width:900px;margin:0 auto;display:grid;gap:22px}
+.kid h2{font-size:2rem}
+.kid .names{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.kid .nm{padding:18px 10px;font-size:1.2rem;font-weight:700;border-radius:14px;border:2px solid var(--line);background:var(--card);cursor:pointer;position:relative}
+.kid .nm.done{border-color:var(--ok)}
+.kid .nm.done::after{content:"✓";position:absolute;top:4px;right:10px;color:var(--ok);font-size:1.1rem}
+.kid .q{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:16px;display:grid;gap:12px}
+.kid .q p{font-size:1.25rem;font-weight:700}
+.kid .opts{display:flex;gap:14px;flex-wrap:wrap}
+.kid .opt{border:3px solid transparent;border-radius:50%;padding:4px;background:none;cursor:pointer;line-height:0}
+.kid .opt[aria-pressed="true"]{border-color:var(--ink)}
+.kid .bar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.hold{position:relative;overflow:hidden}
+.hold i{position:absolute;left:0;bottom:0;height:3px;background:var(--accent);width:0}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <div class="brand">
+    <svg width="34" height="22" viewBox="0 0 34 22" aria-hidden="true"><circle cx="6" cy="11" r="5.5" fill="#2FA84F"/><path d="M17 5.5a5.5 5.5 0 0 0 0 11z" fill="#2FA84F"/><path d="M17 5.5a5.5 5.5 0 0 1 0 11z" fill="#F28C1B"/><circle cx="28" cy="11" r="5.5" fill="#D93A2B"/></svg>
+    <h1>Bulletins Gistoux</h1>
+  </div>
+  <span class="chip">Les fichiers restent sur cet ordinateur</span>
+  <div class="ctx" id="ctx"></div>
+</div></header>
+
+<nav class="steps" aria-label="Étapes"><div class="wrap" role="tablist">
+  <button class="step" role="tab" data-tab="cahier" aria-selected="true"><span class="n">1</span>Cahier de notes</button>
+  <button class="step" role="tab" data-tab="page"><span class="n">2</span>Mise en page</button>
+  <button class="step" role="tab" data-tab="auto"><span class="n">3</span>Autoévaluation</button>
+  <button class="step" role="tab" data-tab="comm"><span class="n">4</span>Commentaires</button>
+  <button class="step" role="tab" data-tab="gen"><span class="n">5</span>Générer</button>
+</div></nav>
+
+<div id="framed" hidden style="background:var(--warn-soft);border-bottom:1px solid var(--line)"><div class="wrap" style="padding-block:12px;display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+  <span style="flex:1 1 320px"><b>Ici, dans Teams, le Word ne peut pas se télécharger.</b> Copiez l'adresse ci-dessous et collez-la dans Edge.</span>
+  <input type="text" id="outUrl" readonly aria-label="Adresse de l'application" style="flex:1 1 260px;max-width:420px" onclick="this.select()">
+  <button class="btn primary" id="copyUrl">Copier l'adresse</button>
+</div></div>
+<main class="wrap">
+
+<!-- 1. CAHIER -->
+<section class="panel" id="tab-cahier">
+  <div class="grid2" style="align-items:start">
+    <div style="display:grid;gap:8px">
+      <h2>Déposez votre cahier de notes</h2>
+      <p class="lead">L'application lit la feuille <b>Général</b> et reconnaît les compétences grâce au mot « Couleurs » sous chaque titre de colonne. Vous pouvez déposer un cahier incomplet : il suffira de le redéposer quand il sera terminé, vos commentaires seront conservés.</p>
+    </div>
+    <label class="drop" id="dropXlsx" for="fileXlsx">
+      <input type="file" id="fileXlsx" accept=".xlsx,.xlsm">
+      <strong>Choisir le fichier Excel</strong>
+      <span class="muted small">ou glissez-le ici · .xlsx</span>
+      <span class="small" id="fileName"></span>
+    </label>
+  </div>
+  <div id="loadMsg"></div>
+  <div id="cahierView" class="panel"></div>
+</section>
+
+<!-- 2. MISE EN PAGE -->
+<section class="panel" id="tab-page" hidden>
+  <div class="card">
+    <h3>Période</h3>
+    <div class="seasons" id="seasons" role="radiogroup" aria-label="Saison"></div>
+    <div class="row small">
+      <span class="muted" id="bannerState"></span>
+      <label class="btn" for="fileBanner" style="font-weight:400">Ajouter ma bannière pour cette saison</label>
+      <input type="file" id="fileBanner" accept="image/png,image/jpeg" hidden>
+      <button class="btn link" id="btnBannerReset" hidden>Revenir à la bannière par défaut</button>
+    </div>
+  </div>
+  <div class="card">
+    <h3>En-tête et signatures</h3>
+    <div class="fields">
+      <label class="field">Classe <input type="text" id="sClasse" placeholder="P2"></label>
+      <label class="field">Année <input type="number" id="sYear" min="2020" max="2100"></label>
+      <label class="field">Police du bulletin
+        <select id="sFont"><option>Comic Sans MS</option><option>Century Gothic</option><option>Arial</option><option>Calibri</option><option>Verdana</option></select></label>
+      <label class="field">Titre obtenu <input type="text" id="sTitlePreview" readonly tabindex="-1"></label>
+    </div>
+    <label class="field">Phrase sous le titre <textarea id="sIntro" rows="2"></textarea></label>
+    <div class="fields">
+      <label class="field">Signature 1 <input type="text" id="sSig0"></label>
+      <label class="field">Signature 2 <input type="text" id="sSig1"></label>
+      <label class="field">Signature 3 <input type="text" id="sSig2"></label>
+    </div>
+    <label class="check"><input type="checkbox" id="sOdd"><span>Faire commencer chaque élève sur une nouvelle feuille (ajoute une page blanche si besoin, pour l'impression recto-verso)</span></label>
+    <label class="field" style="max-width:420px">Compétence sans résultat
+      <select id="sMissing"><option value="dash">Afficher un tiret « — non évalué »</option><option value="hide">Ne pas afficher la ligne</option></select></label>
+  </div>
+  <div class="card">
+    <h3>Compétences</h3>
+    <p class="muted small">Le texte et le domaine sont repris tels quels dans le bulletin. Une compétence ajoutée dans l'Excel apparaît ici automatiquement ; choisissez son domaine une fois, l'application s'en souviendra.</p>
+    <div id="compMap" class="tscroll" style="border:0"></div>
+  </div>
+  <div class="card">
+    <h3>Comportement et travail</h3>
+    <div id="behMap" class="tscroll" style="border:0"></div>
+  </div>
+</section>
+
+<!-- 3. AUTOEVALUATION -->
+<section class="panel" id="tab-auto" hidden>
+  <div class="grid2">
+    <div class="card">
+      <h3>Réponses Google Forms</h3>
+      <p class="muted small">Dans Google Forms : <i>Réponses → ⋮ → Télécharger les réponses (.csv)</i>. Déposez ensuite le fichier ici. Pour que chaque réponse retrouve son élève, la première question du formulaire doit être une liste déroulante des prénoms.</p>
+      <label class="drop" id="dropForms" for="fileForms" style="padding:16px">
+        <input type="file" id="fileForms" accept=".csv,.xlsx,.tsv,.txt">
+        <strong style="font-size:1rem">Déposer les réponses (.csv ou .xlsx)</strong>
+      </label>
+    </div>
+    <div class="card">
+      <h3>Mode élève sur cet appareil</h3>
+      <p class="muted small">Chaque enfant touche son prénom puis choisit une boule de couleur pour chaque phrase. Les réponses sont enregistrées sur cet appareil.</p>
+      <label class="field">Couleurs proposées aux élèves
+        <select id="kidChoices"><option value="3">3 couleurs : vert, orange, rouge</option><option value="5">5 couleurs : avec les demi-boules</option></select></label>
+      <div class="row"><button class="btn primary" id="btnKid">Lancer le mode élève</button></div>
+    </div>
+  </div>
+  <div id="formsMap"></div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <h3>Réponses des élèves</h3>
+      <button class="btn small" id="btnClearAuto">Effacer les réponses importées</button>
+    </div>
+    <p class="muted small">Une réponse venant de Forms ou du mode élève remplace la colonne « Elève » de l'Excel. Sous chaque boule : <b>X</b> = Excel, <b>F</b> = Forms, <b>É</b> = mode élève.</p>
+    <div id="autoView"></div>
+  </div>
+</section>
+
+<!-- 4. COMMENTAIRES -->
+<section class="panel" id="tab-comm" hidden>
+  <div class="row" style="justify-content:space-between">
+    <h2 id="commTitle">Commentaires</h2>
+    <span class="muted small" id="commCount"></span>
+  </div>
+  <p class="lead small">Les commentaires s'enregistrent automatiquement sur cet ordinateur, séparément des notes. Pensez à télécharger une sauvegarde (étape 5) si vous changez d'ordinateur.</p>
+  <div id="commView"></div>
+</section>
+
+<!-- 5. GENERER -->
+<section class="panel" id="tab-gen" hidden>
+  <div class="grid2" style="align-items:start">
+    <div class="card">
+      <h3>Vérifications</h3>
+      <ul class="checklist" id="checks"></ul>
+    </div>
+    <div class="card">
+      <h3>Créer le document Word</h3>
+      <label class="field">Élèves
+        <select id="genWho"><option value="all">Toute la classe</option></select></label>
+      <button class="btn primary big" id="btnGen">Générer les bulletins</button>
+      <p class="muted small" id="genMsg">Un seul fichier Word avec tous les bulletins, prêt à imprimer en recto-verso.</p>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Sauvegarde des commentaires et des autoévaluations</h3>
+    <p class="muted small">Ce petit fichier permet de reprendre votre travail sur un autre ordinateur ou de le récupérer si le navigateur est vidé.</p>
+    <div class="row">
+      <button class="btn" id="btnBackup">Télécharger une sauvegarde</button>
+      <label class="btn" for="fileRestore" style="font-weight:400">Restaurer une sauvegarde</label>
+      <input type="file" id="fileRestore" accept=".json" hidden>
+    </div>
+  </div>
+</section>
+</main>
+
+<div class="kid" id="kid" hidden></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+"use strict";
+/* ============================================================
+   Bulletins Gistoux — tout se passe dans le navigateur.
+   Lecture .xlsx : mini-lecteur ZIP + XML maison.
+   Écriture .docx : WordprocessingML écrit à la main + ZIP.
+   ============================================================ */
+
+/* ---------- utilitaires ---------- */
+const $ = (s, el=document) => el.querySelector(s);
+const $$ = (s, el=document) => [...el.querySelectorAll(s)];
+const esc = s => String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const norm = s => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[’`]/g,"'").replace(/\s+/g," ").trim();
+const keyOf = s => norm(s).replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim();
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e){ return false; } },
+  del(k){ try{ localStorage.removeItem(k); }catch(e){} }
+};
+let toastTimer;
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.hidden=false; clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.hidden=true, 3200); }
+function download(bytesOrBlob, name, type){
+  if (typeof FRAMED !== "undefined" && FRAMED) toast("Dans Teams, le téléchargement est bloqué : copiez l'adresse en haut de la page et ouvrez-la dans Edge.");
+  const blob = bytesOrBlob instanceof Blob ? bytesOrBlob : new Blob([bytesOrBlob], {type});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+}
+
+/* ---------- niveaux de couleur ---------- */
+const COL = { V:"#2FA84F", O:"#F28C1B", R:"#D93A2B" };
+const LEVELS = {
+  V:  { label:"Vert",         c:[COL.V, COL.V] },
+  VO: { label:"Vert orange",  c:[COL.V, COL.O] },
+  O:  { label:"Orange",       c:[COL.O, COL.O] },
+  OR: { label:"Orange rouge", c:[COL.O, COL.R] },
+  R:  { label:"Rouge",        c:[COL.R, COL.R] }
+};
+function toLevel(v){
+  if (v == null || typeof v === "object") return null;
+  const raw = String(v);
+  if (/🟢/.test(raw) && /🟠/.test(raw)) return "VO";
+  if (/🟠/.test(raw) && /🔴/.test(raw)) return "OR";
+  if (/🟢/.test(raw)) return "V"; if (/🟠/.test(raw)) return "O"; if (/🔴/.test(raw)) return "R";
+  const s = norm(raw);
+  if (!s || s === "vide") return null;
+  const hv = s.includes("vert"), ho = s.includes("orange"), hr = s.includes("rouge");
+  if (hv && ho) return "VO"; if (ho && hr) return "OR";
+  if (hv) return "V"; if (ho) return "O"; if (hr) return "R";
+  return null;
+}
+function ballSVG(lv, size=18){
+  if (!lv) return `<span class="muted" aria-label="non évalué">—</span>`;
+  const [a,b] = LEVELS[lv].c;
+  return `<svg class="ball" width="${size}" height="${size}" viewBox="0 0 20 20" role="img" aria-label="${LEVELS[lv].label}"><path d="M10 1a9 9 0 0 0 0 18z" fill="${a}"/><path d="M10 1a9 9 0 0 1 0 18z" fill="${b}"/><circle cx="10" cy="10" r="9" fill="none" stroke="#0000004d" stroke-width="1"/></svg>`;
+}
+
+/* ---------- ZIP : lecture ---------- */
+async function inflateRaw(u8){
+  const ds = new DecompressionStream("deflate-raw");
+  const buf = await new Response(new Blob([u8]).stream().pipeThrough(ds)).arrayBuffer();
+  return new Uint8Array(buf);
+}
+function readZipIndex(buf){
+  const dv = new DataView(buf), u8 = new Uint8Array(buf);
+  let e = buf.byteLength - 22;
+  while (e >= 0 && dv.getUint32(e, true) !== 0x06054b50) e--;
+  if (e < 0) throw new Error("Ce fichier n'est pas un classeur Excel (.xlsx).");
+  const count = dv.getUint16(e + 10, true); let p = dv.getUint32(e + 16, true);
+  const td = new TextDecoder(), idx = {};
+  for (let i = 0; i < count; i++){
+    if (dv.getUint32(p, true) !== 0x02014b50) break;
+    const method = dv.getUint16(p + 10, true), csize = dv.getUint32(p + 20, true);
+    const nl = dv.getUint16(p + 28, true), xl = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true);
+    const off = dv.getUint32(p + 42, true);
+    const name = td.decode(u8.subarray(p + 46, p + 46 + nl));
+    idx[name] = { method, csize, off };
+    p += 46 + nl + xl + cl;
+  }
+  return { buf, dv, idx };
+}
+async function zipRead(z, name){
+  const e = z.idx[name]; if (!e) return null;
+  const nl = z.dv.getUint16(e.off + 26, true), xl = z.dv.getUint16(e.off + 28, true);
+  const data = new Uint8Array(z.buf, e.off + 30 + nl + xl, e.csize);
+  const out = e.method === 0 ? data : await inflateRaw(data);
+  return new TextDecoder().decode(out);
+}
+
+/* ---------- XLSX : lecture ---------- */
+function colIndex(ref){ let n = 0; for (const ch of ref.replace(/\d+/g,"")) n = n * 26 + (ch.charCodeAt(0) - 64); return n - 1; }
+const xmlDoc = s => new DOMParser().parseFromString(s, "application/xml");
+async function readXlsx(buf){
+  const z = readZipIndex(buf);
+  const wb = xmlDoc(await zipRead(z, "xl/workbook.xml"));
+  const relsTxt = await zipRead(z, "xl/_rels/workbook.xml.rels");
+  const rels = {};
+  if (relsTxt) for (const r of xmlDoc(relsTxt).getElementsByTagName("Relationship")) rels[r.getAttribute("Id")] = r.getAttribute("Target");
+  const sst = [];
+  const sstTxt = await zipRead(z, "xl/sharedStrings.xml");
+  if (sstTxt) for (const si of xmlDoc(sstTxt).getElementsByTagName("si")) {
+    let t = ""; for (const n of si.getElementsByTagName("t")) if (n.parentNode.nodeName !== "rPh") t += n.textContent; sst.push(t);
+  }
+  const sheets = [];
+  for (const s of wb.getElementsByTagName("sheet")){
+    const rid = s.getAttribute("r:id") || s.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships","id");
+    let target = rels[rid] || ""; target = target.replace(/^\//, "");
+    if (!target.startsWith("xl/")) target = "xl/" + target;
+    sheets.push({ name: s.getAttribute("name"), path: target });
+  }
+  async function rows(sheet){
+    const txt = await zipRead(z, sheet.path); if (!txt) return [];
+    const doc = xmlDoc(txt), grid = [];
+    for (const c of doc.getElementsByTagName("c")){
+      const ref = c.getAttribute("r"); if (!ref) continue;
+      const r = parseInt(ref.replace(/[A-Z]+/g,""), 10) - 1, ci = colIndex(ref);
+      const t = c.getAttribute("t"); const vEl = c.getElementsByTagName("v")[0];
+      let v = vEl ? vEl.textContent : null;
+      if (t === "s") v = sst[+v] ?? "";
+      else if (t === "inlineStr"){ v = [...c.getElementsByTagName("t")].map(n=>n.textContent).join(""); }
+      else if (t === "e") v = { err: v || "#ERREUR" };
+      else if (t === "b") v = v === "1";
+      else if (v != null && t !== "str" && v !== "" && !isNaN(v)) v = +v;
+      (grid[r] ||= [])[ci] = v;
+    }
+    for (let i = 0; i < grid.length; i++) grid[i] ||= [];
+    return grid;
+  }
+  return { sheets, rows };
+}
+function parseCSV(text){
+  text = text.replace(/^﻿/, "");
+  const first = text.split(/\r?\n/)[0] || "";
+  const sep = [",",";","\t"].map(s=>[s, first.split(s).length]).sort((a,b)=>b[1]-a[1])[0][0];
+  const out = []; let row = [], cur = "", q = false;
+  for (let i = 0; i < text.length; i++){
+    const ch = text[i];
+    if (q){ if (ch === '"'){ if (text[i+1] === '"'){ cur += '"'; i++; } else q = false; } else cur += ch; }
+    else if (ch === '"') q = true;
+    else if (ch === sep){ row.push(cur); cur = ""; }
+    else if (ch === "\n" || ch === "\r"){ if (ch === "\r" && text[i+1] === "\n") i++; row.push(cur); out.push(row); row = []; cur = ""; }
+    else cur += ch;
+  }
+  if (cur !== "" || row.length){ row.push(cur); out.push(row); }
+  return out.filter(r => r.some(c => String(c).trim() !== ""));
+}
+
+/* ---------- domaines et rubriques ---------- */
+const DOMAINS = [
+  { id:"math", label:"Mathématiques",       fill:"FFFF00", text:"000000" },
+  { id:"fr",   label:"Français",            fill:"0070C0", text:"FFFFFF" },
+  { id:"eveil",label:"Éveil",               fill:"00B050", text:"FFFFFF" },
+  { id:"nl",   label:"Néerlandais",         fill:"E36C09", text:"FFFFFF" },
+  { id:"art",  label:"Éducation artistique",fill:"C0387E", text:"FFFFFF" },
+  { id:"ep",   label:"Éducation physique",  fill:"00A3D9", text:"FFFFFF" },
+  { id:"autre",label:"Autres",              fill:"7F7F7F", text:"FFFFFF" },
+  { id:"hide", label:"Ne pas afficher",     fill:null }
+];
+const BGROUPS = [
+  { id:"comp", label:"Au niveau du comportement" },
+  { id:"trav", label:"Au niveau du travail" },
+  { id:"hide", label:"Ne pas afficher" }
+];
+const BEH_FILL = "7030A0";
+function guessDomain(h){
+  const s = keyOf(h);
+  if (/eveil|hist|scien|geo|techno|formation historique/.test(s)) return "eveil";
+  if (/nombre|nbr|opera|table|grandeur|solide|figure|traitement|donnee|calcul|math|probleme/.test(s)) return "math";
+  if (/gram|conj|ortho|lire|lect|ecri|parl|ecout|voca|savoir|fran|orale|dict/.test(s)) return "fr";
+  if (/neerl|nl|dutch/.test(s)) return "nl";
+  if (/art|musi|dessin/.test(s)) return "art";
+  if (/gym|sport|physique|natation/.test(s)) return "ep";
+  return "autre";
+}
+function guessLabel(h){
+  const s = keyOf(h), raw = String(h).trim();
+  if (/^eveil hist/.test(s)) return "Histoire";
+  if (/^eveil sc/.test(s)) return "Sciences";
+  if (/^eveil geo/.test(s)) return "Géographie";
+  if (/grammaire ?conjugaison/.test(s)) return "Grammaire / Conjugaison";
+  return raw.replace(/\s+/g," ");
+}
+function guessGroup(h){ return /devoir|travaux|travail|signer|document|materiel|cartable/.test(keyOf(h)) ? "trav" : "comp"; }
+
+/* ---------- état ---------- */
+const SEASONS = [
+  { id:"automne",   name:"Automne",   title:"Bulletin d’automne",   color:"B35A12" },
+  { id:"hiver",     name:"Hiver",     title:"Bulletin d’hiver",     color:"2E6DA4" },
+  { id:"printemps", name:"Printemps", title:"Bulletin de printemps", color:"3C8D2F" },
+  { id:"ete",       name:"Été",       title:"Bulletin d’été",       color:"C98A00" }
+];
+function guessSeason(){ const m = new Date().getMonth(); return m>=8&&m<=10?"automne":(m===11||m<=1)?"hiver":m<=4?"printemps":"ete"; }
+const DEFAULT_SETTINGS = {
+  season: guessSeason(), year: new Date().getFullYear(), classe: "", font: "Comic Sans MS",
+  intro: "Ce bulletin offre une synthèse (moyenne) des évaluations réalisées en classe durant cette période.",
+  sigs: ["Signature des parents", "Signature de l’enfant", "Signature de l’enseignant"],
+  odd: true, missing: "dash", kidChoices: "3", compMap: {}, behMap: {}
+};
+let S = Object.assign({}, DEFAULT_SETTINGS, store.get("bg:settings", {}));
+const saveSettings = () => store.set("bg:settings", S);
+let D = null;            // données du cahier { file, students, comps, behs, isSample }
+let C = {};              // commentaires { key: texte }
+let A = {};              // autoévaluations { key: { critId: {lv, src} } }
+let current = null;      // élève sélectionné (commentaires)
+let formsPending = null; // import Forms en attente de validation
+
+const ns = () => `bg:${keyOf(S.classe)||"classe"}:${S.season}:${S.year}`;
+function loadWork(){ C = store.get(ns()+":comments", {}); A = store.get(ns()+":auto", {}); }
+const saveComments = () => store.set(ns()+":comments", C) || toast("Attention : impossible d'enregistrer dans ce navigateur. Téléchargez une sauvegarde.");
+const saveAuto = () => store.set(ns()+":auto", A);
+
+/* ---------- lecture du cahier ---------- */
+async function loadWorkbook(file){
+  const buf = await file.arrayBuffer();
+  const wb = await readXlsx(buf);
+  let sheet = wb.sheets.find(s => keyOf(s.name) === "general"), grid = null;
+  if (sheet) grid = await wb.rows(sheet);
+  if (!grid || !(grid[1]||[]).some(v => keyOf(v).startsWith("couleur"))){
+    for (const s of wb.sheets){
+      const g = await wb.rows(s);
+      if ((g[1]||[]).some(v => keyOf(v).startsWith("couleur"))){ sheet = s; grid = g; break; }
+    }
+  }
+  if (!grid) throw new Error("Je ne trouve pas de feuille avec des colonnes « Couleurs » en ligne 2. Vérifiez que c'est bien le cahier de notes.");
+  return parseGeneral(grid, file.name, sheet.name);
+}
+function parseGeneral(grid, fileName, sheetName){
+  const h1 = grid[0] || [], h2 = grid[1] || [];
+  const width = Math.max(h1.length, h2.length);
+  let cNom = -1, cPre = -1;
+  const comps = [], behE = [], behT = [];
+  for (let c = 0; c < width; c++){
+    const head = h1[c] == null ? "" : String(h1[c]).trim(), type = keyOf(h2[c]);
+    const hk = keyOf(head);
+    if (hk === "nom" && cNom < 0) cNom = c;
+    else if (hk === "prenom" && cPre < 0) cPre = c;
+    if (!head) continue;
+    if (type.startsWith("couleur")) comps.push({ id:"c"+c+":"+hk, col:c, header:head, hk });
+    else if (type === "eleve") behE.push({ col:c, header:head, hk });
+    else if (type === "enseignant") behT.push({ col:c, header:head, hk });
+  }
+  const behs = behE.map((e, i) => {
+    const t = behT.find(x => x.hk === e.hk) || behT[i];
+    return { id:"b:"+e.hk, header:e.header.replace(/\s+/g," "), hk:e.hk, colE:e.col, colT:t ? t.col : -1 };
+  });
+  behT.forEach(t => { if (!behs.some(b => b.colT === t.col)) behs.push({ id:"b:"+t.hk, header:t.header, hk:t.hk, colE:-1, colT:t.col }); });
+
+  const students = [], used = new Set();
+  for (let r = 2; r < grid.length; r++){
+    const row = grid[r] || [];
+    const nom = cNom >= 0 && row[cNom] != null ? String(row[cNom]).trim() : "";
+    const prenom = cPre >= 0 && row[cPre] != null ? String(row[cPre]).trim() : "";
+    const comp = {}, raw = {}; let any = false;
+    for (const c of comps){ const v = row[c.col]; raw[c.id] = v; comp[c.id] = toLevel(v); if (comp[c.id]) any = true; }
+    const beh = {};
+    for (const b of behs){ beh[b.id] = { e: b.colE>=0 ? toLevel(row[b.colE]) : null, t: b.colT>=0 ? toLevel(row[b.colT]) : null }; if (beh[b.id].e || beh[b.id].t) any = true; }
+    if (!nom && !prenom && !any) continue;
+    const num = row[0] != null && typeof row[0] !== "object" ? String(row[0]) : String(students.length + 1);
+    let key = (nom || prenom) ? keyOf(prenom) + "|" + keyOf(nom) : "eleve-" + keyOf(num);
+    while (used.has(key)) key += "+"; used.add(key);
+    const display = (prenom || nom) ? [prenom, nom].filter(Boolean).join(" ") : "Élève " + num;
+    students.push({ key, nom, prenom, display, num, comp, raw, beh });
+  }
+  if (!students.length) throw new Error("La feuille " + sheetName + " ne contient aucun élève. Vérifiez qu'il y a des noms ou des résultats à partir de la ligne 3.");
+  // compléter les réglages pour les nouvelles colonnes
+  for (const c of comps) if (!S.compMap[c.hk]) S.compMap[c.hk] = { label: guessLabel(c.header), domain: guessDomain(c.header) };
+  for (const b of behs) if (!S.behMap[b.hk]) S.behMap[b.hk] = { label: b.header.replace(/\s*\.\s*$/,"."), group: guessGroup(b.header) };
+  return { file:fileName, sheet:sheetName, students, comps, behs };
+}
+
+/* ---------- exemple ---------- */
+function sampleData(){
+  const comps = ["Nombres","Opérations","Tables","Grandeurs","Solides et figures","Traitement de données","Grammaire/conjugaison","Orthographe","Lire","Ecrire","Parler","Ecouter","Eveil Hist","Eveil sc","Eveil géo"];
+  const behs = ["Je respecte la charte de la classe.","Je participe en classe.","Je laisse les autres s’exprimer : je les écoute sans les interrompre.","Je me comporte correctement en dehors de la classe en respectant les règles de l’école.","Je fais mes devoirs pour la date prévue.","Je réalise mes travaux consciencieusement.","Je fais signer mes documents."];
+  const names = [["Léa","Exemple"],["Noah","Exemple"],["Inès","Exemple"],["Arthur","Exemple"],["Zoé","Exemple"],["Louis","Exemple"],["Mila","Exemple"],["Jules","Exemple"]];
+  const pool = ["Vert","Vert","Vert","Vert","Vert orange","Orange","Orange rouge","rouge"];
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const pick = () => pool[Math.floor(rnd()*pool.length)];
+  const g = [["", "Nom","Prénom", ...comps, ...behs, ...behs], ["", "", "", ...comps.map(()=> "Couleurs"), ...behs.map(()=>"Elève"), ...behs.map(()=>"Enseignant")]];
+  names.forEach((n,i) => g.push([i+1, n[1], n[0], ...comps.map((c,j)=> j===14 && i<3 ? {err:"#DIV/0!"} : pick()), ...behs.map(pick), ...behs.map(pick)]));
+  const d = parseGeneral(g, "exemple.xlsx", "Général"); d.isSample = true; return d;
+}
+
+/* ---------- valeurs effectives ---------- */
+function selfVal(st, b){ const a = A[st.key] && A[st.key][b.id]; return a ? { lv:a.lv, src:a.src } : { lv: st.beh[b.id].e, src: st.beh[b.id].e ? "X" : "" }; }
+function compRows(){
+  const rows = [];
+  for (const dom of DOMAINS){ if (dom.id === "hide") continue;
+    const items = D.comps.filter(c => (S.compMap[c.hk]||{}).domain === dom.id);
+    if (items.length) rows.push({ dom, items });
+  }
+  return rows;
+}
+function behRows(){
+  return BGROUPS.filter(g=>g.id!=="hide").map(g => ({ g, items: D.behs.filter(b => (S.behMap[b.hk]||{}).group === g.id) })).filter(x=>x.items.length);
+}
+
+/* ---------- rendu : en-tête ---------- */
+function seasonObj(){ return SEASONS.find(s=>s.id===S.season) || SEASONS[0]; }
+function bulletinTitle(){ return seasonObj().title + " " + S.year; }
+function renderCtx(){
+  $("#ctx").innerHTML = D ? `<b>${esc(S.classe || "Classe ?")}</b> · ${esc(seasonObj().name)} ${esc(S.year)} · ${D.students.length} élèves${D.isSample?" (exemple)":""}` : "";
+  $$(".step").forEach(b => b.classList.toggle("done", !!D && b.dataset.tab === "cahier"));
+}
+
+/* ---------- rendu : cahier ---------- */
+function renderCahier(){
+  const v = $("#cahierView");
+  if (!D){ v.innerHTML = `<div class="notice info"><b>Pas encore de fichier.</b><span>Vous pouvez aussi <button class="btn link" id="btnSample">charger un exemple fictif</button> pour découvrir l'application.</span></div>`; $("#btnSample").onclick = () => useData(sampleData()); return; }
+  const cr = compRows();
+  const missing = {}; let errCells = 0;
+  for (const c of D.comps){ let m = 0; for (const s of D.students){ if (!s.comp[c.id]) m++; if (s.raw[c.id] && typeof s.raw[c.id] === "object") errCells++; } if (m) missing[c.id] = m; }
+  const warn = Object.entries(missing).map(([id, m]) => { const c = D.comps.find(x=>x.id===id); return `<li><b>${esc((S.compMap[c.hk]||{}).label||c.header)}</b> : ${m === D.students.length ? "aucun résultat" : m + " élève" + (m>1?"s":"") + " sans résultat"}</li>`; });
+  const head1 = cr.map(r => `<th colspan="${r.items.length}" style="--dc:#${r.dom.fill}">${esc(r.dom.label)}</th>`).join("");
+  const head2 = cr.map(r => r.items.map(c => `<th>${esc(S.compMap[c.hk].label)}</th>`).join("")).join("");
+  const body = D.students.map(s => `<tr><td class="name">${esc(s.display)}</td>${cr.map(r => r.items.map(c => {
+      const raw = s.raw[c.id], err = raw && typeof raw === "object";
+      return `<td class="${s.comp[c.id] ? "" : err ? "err" : "miss"}" title="${esc(err ? raw.err : (raw ?? ""))}">${ballSVG(s.comp[c.id])}</td>`; }).join("")).join("")}</tr>`).join("");
+  v.innerHTML = `
+    <div class="row" style="justify-content:space-between">
+      <div><h3>${esc(D.isSample ? "Exemple fictif" : D.file)}</h3><p class="muted small">Feuille « ${esc(D.sheet)} » · ${D.students.length} élèves · ${D.comps.length} compétences · ${D.behs.length} critères de comportement</p></div>
+      <button class="btn primary" data-go="page">Continuer : mise en page</button>
+    </div>
+    ${warn.length ? `<div class="notice warn"><b>Résultats manquants</b><ul>${warn.join("")}</ul><span class="small">${errCells ? "Les cases en rouge pâle contiennent une erreur Excel (#DIV/0!…), souvent parce qu'aucune évaluation n'est encore encodée. " : ""}Selon votre réglage, ces lignes afficheront « — non évalué » ou seront masquées.</span></div>` : `<div class="notice info">Toutes les compétences ont un résultat pour chaque élève.</div>`}
+    <div class="tscroll"><table class="data"><thead><tr class="dom"><th class="name"></th>${head1}</tr><tr><th class="name">Élève</th>${head2}</tr></thead><tbody>${body}</tbody></table></div>`;
+}
+
+/* ---------- rendu : mise en page ---------- */
+const bannerCache = {};
+function bannerURL(id){ return (store.get("bg:banner:"+id, null)) || (bannerCache[id] ||= drawBanner(id, 1800, 420).toDataURL("image/png")); }
+function renderPage(){
+  $("#seasons").innerHTML = SEASONS.map(s => `<button class="season" role="radio" aria-checked="${s.id===S.season}" data-season="${s.id}"><img alt="" src="${bannerURL(s.id)}"><b>${s.name}</b><span class="tag">${store.get("bg:banner:"+s.id,null) ? "Votre bannière" : "Bannière par défaut"}</span></button>`).join("");
+  $$(".season").forEach(b => b.onclick = () => { S.season = b.dataset.season; saveSettings(); loadWork(); renderAll(); });
+  const custom = store.get("bg:banner:"+S.season, null);
+  $("#bannerState").textContent = custom ? `Bannière personnalisée utilisée pour ${seasonObj().name.toLowerCase()}.` : `Bannière par défaut pour ${seasonObj().name.toLowerCase()}.`;
+  $("#btnBannerReset").hidden = !custom;
+  $("#sClasse").value = S.classe; $("#sYear").value = S.year; $("#sFont").value = S.font; $("#sIntro").value = S.intro;
+  S.sigs.forEach((t,i) => $("#sSig"+i).value = t);
+  $("#sOdd").checked = !!S.odd; $("#sMissing").value = S.missing; $("#kidChoices").value = S.kidChoices;
+  $("#sTitlePreview").value = bulletinTitle();
+  if (!D){ $("#compMap").innerHTML = `<p class="muted small">Déposez d'abord un cahier de notes.</p>`; $("#behMap").innerHTML = ""; return; }
+  $("#compMap").innerHTML = `<table class="map"><thead><tr><th>Colonne Excel</th><th>Texte sur le bulletin</th><th>Domaine</th></tr></thead><tbody>${D.comps.map(c => { const m = S.compMap[c.hk]; return `<tr><td>${esc(c.header)}</td><td><input type="text" id="cl-${esc(c.hk)}" data-ck="${esc(c.hk)}" value="${esc(m.label)}" aria-label="Texte pour ${esc(c.header)}"></td><td><select id="cd-${esc(c.hk)}" data-cd="${esc(c.hk)}" aria-label="Domaine pour ${esc(c.header)}">${DOMAINS.map(d=>`<option value="${d.id}" ${d.id===m.domain?"selected":""}>${d.label}</option>`).join("")}</select></td></tr>`; }).join("")}</tbody></table>`;
+  $("#behMap").innerHTML = D.behs.length ? `<table class="map"><thead><tr><th>Colonne Excel</th><th>Texte sur le bulletin</th><th>Rubrique</th></tr></thead><tbody>${D.behs.map(b => { const m = S.behMap[b.hk]; return `<tr><td>${esc(b.header)}</td><td><input type="text" id="bl-${esc(b.hk)}" data-bk="${esc(b.hk)}" value="${esc(m.label)}" aria-label="Texte pour ${esc(b.header)}"></td><td><select id="bg-${esc(b.hk)}" data-bg="${esc(b.hk)}" aria-label="Rubrique">${BGROUPS.map(g=>`<option value="${g.id}" ${g.id===m.group?"selected":""}>${g.label}</option>`).join("")}</select></td></tr>`; }).join("")}</tbody></table>` : `<p class="muted small">Aucune colonne « Elève » ou « Enseignant » trouvée dans la feuille Général.</p>`;
+  $$("[data-ck]").forEach(i => i.oninput = () => { S.compMap[i.dataset.ck].label = i.value; saveSettings(); });
+  $$("[data-cd]").forEach(i => i.onchange = () => { S.compMap[i.dataset.cd].domain = i.value; saveSettings(); });
+  $$("[data-bk]").forEach(i => i.oninput = () => { S.behMap[i.dataset.bk].label = i.value; saveSettings(); });
+  $$("[data-bg]").forEach(i => i.onchange = () => { S.behMap[i.dataset.bg].group = i.value; saveSettings(); });
+}
+function bindSettings(){
+  const onCtx = () => { saveSettings(); loadWork(); renderCtx(); $("#sTitlePreview").value = bulletinTitle(); };
+  $("#sClasse").oninput = e => { S.classe = e.target.value.trim(); onCtx(); };
+  $("#sYear").oninput = e => { S.year = parseInt(e.target.value,10) || new Date().getFullYear(); onCtx(); };
+  $("#sFont").onchange = e => { S.font = e.target.value; saveSettings(); };
+  $("#sIntro").oninput = e => { S.intro = e.target.value; saveSettings(); };
+  [0,1,2].forEach(i => $("#sSig"+i).oninput = e => { S.sigs[i] = e.target.value; saveSettings(); });
+  $("#sOdd").onchange = e => { S.odd = e.target.checked; saveSettings(); };
+  $("#sMissing").onchange = e => { S.missing = e.target.value; saveSettings(); };
+  $("#kidChoices").onchange = e => { S.kidChoices = e.target.value; saveSettings(); };
+  $("#fileBanner").onchange = async e => {
+    const f = e.target.files[0]; if (!f) return;
+    const url = await new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(f); });
+    const small = await shrinkImage(url, 2000);
+    if (!store.set("bg:banner:"+S.season, small)) toast("Image trop lourde pour être retenue : elle servira seulement pour cette session.");
+    else toast("Bannière enregistrée pour " + seasonObj().name.toLowerCase() + ".");
+    bannerCache["custom:"+S.season] = small; renderPage(); e.target.value = "";
+  };
+  $("#btnBannerReset").onclick = () => { store.del("bg:banner:"+S.season); renderPage(); };
+}
+function shrinkImage(url, maxW){
+  return new Promise(res => { const im = new Image(); im.onload = () => {
+    const k = Math.min(1, maxW / im.naturalWidth); const cv = document.createElement("canvas");
+    cv.width = Math.round(im.naturalWidth * k); cv.height = Math.round(im.naturalHeight * k);
+    cv.getContext("2d").drawImage(im, 0, 0, cv.width, cv.height);
+    res(cv.toDataURL(url.startsWith("data:image/png") ? "image/png" : "image/jpeg", .9)); }; im.onerror = () => res(url); im.src = url; });
+}
+
+/* ---------- rendu : autoévaluation ---------- */
+function renderAuto(){
+  const v = $("#autoView");
+  if (!D){ v.innerHTML = `<p class="muted small">Déposez d'abord un cahier de notes : la liste des élèves et des phrases vient de la feuille Général.</p>`; return; }
+  if (!D.behs.length){ v.innerHTML = `<p class="muted small">Ce cahier ne contient pas de colonnes de comportement.</p>`; return; }
+  const bs = D.behs;
+  v.innerHTML = `<div class="tscroll"><table class="data"><thead><tr><th class="name">Élève</th>${bs.map(b=>`<th title="${esc(b.header)}">${esc(shortTxt(S.behMap[b.hk].label, 38))}</th>`).join("")}</tr></thead><tbody>${D.students.map(s => `<tr><td class="name">${esc(s.display)}</td>${bs.map(b => { const x = selfVal(s,b); return `<td class="${x.lv?"":"miss"}">${ballSVG(x.lv)}<span class="src">${x.src==="forms"?"F":x.src==="kid"?"É":x.src}</span></td>`; }).join("")}</tr>`).join("")}</tbody></table></div>`;
+}
+const shortTxt = (t, n) => t.length > n ? t.slice(0, n-1).trim() + "…" : t;
+function tokens(s){ const stop = new Set("je les la le de des du en et a au aux mes ma mon un une sans pour dans par sur ce cette qui que l d s n".split(" ")); return keyOf(s).split(" ").filter(w => w.length > 1 && !stop.has(w)); }
+function similarity(a, b){ const A1 = new Set(tokens(a)), B1 = new Set(tokens(b)); if (!A1.size || !B1.size) return 0; let n = 0; A1.forEach(w => { if (B1.has(w)) n++; }); return n / Math.min(A1.size, B1.size); }
+async function importForms(file){
+  let rows;
+  if (/\.xlsx$/i.test(file.name)){ const wb = await readXlsx(await file.arrayBuffer()); rows = (await wb.rows(wb.sheets[0])).map(r => r.map(v => v == null ? "" : typeof v === "object" ? "" : String(v))); }
+  else rows = parseCSV(await file.text());
+  if (rows.length < 2) throw new Error("Le fichier de réponses est vide.");
+  const head = rows[0].map(h => String(h||"").trim());
+  // colonnes nom
+  let cName = head.findIndex(h => /pr[ée]nom|ton nom|qui es|[ée]l[èe]ve|name/i.test(h) && !/nom de famille/i.test(h));
+  const cFam = head.findIndex(h => /nom de famille|^nom$/i.test(h.trim()));
+  if (cName < 0) cName = head.findIndex(h => /nom/i.test(h));
+  // colonnes critères
+  const map = {};
+  D.behs.forEach(b => { let best = -1, sc = 0; head.forEach((h, i) => { if (i === cName || i === cFam) return; const x = Math.max(similarity(h, b.header), similarity(h, S.behMap[b.hk].label)); if (x > sc){ sc = x; best = i; } }); map[b.id] = sc >= .5 ? best : -1; });
+  formsPending = { file:file.name, head, rows: rows.slice(1), cName, cFam, map, assign:{} };
+  renderFormsMap();
+}
+function matchStudent(name){
+  const k = keyOf(name); if (!k) return null;
+  const full = s => [keyOf(s.prenom + " " + s.nom), keyOf(s.nom + " " + s.prenom), keyOf(s.display)];
+  let hit = D.students.find(s => full(s).includes(k)); if (hit) return hit;
+  const byFirst = D.students.filter(s => keyOf(s.prenom) && (k === keyOf(s.prenom) || k.startsWith(keyOf(s.prenom) + " ")));
+  return byFirst.length === 1 ? byFirst[0] : null;
+}
+function renderFormsMap(){
+  const box = $("#formsMap"), P = formsPending;
+  if (!P){ box.innerHTML = ""; return; }
+  const names = P.rows.map(r => [r[P.cName] ?? "", P.cFam >= 0 && P.cFam !== P.cName ? r[P.cFam] : ""].join(" ").trim());
+  const uniq = [...new Set(names.filter(Boolean))];
+  const unmatched = uniq.filter(n => !(P.assign[n] || matchStudent(n)));
+  const opts = sel => `<option value="-1">— ignorer —</option>` + P.head.map((h,i)=>`<option value="${i}" ${i===sel?"selected":""}>${esc(shortTxt(h,70))}</option>`).join("");
+  box.innerHTML = `<div class="card">
+    <div class="row" style="justify-content:space-between"><h3>Vérifier l'import : ${esc(P.file)}</h3><span class="muted small">${P.rows.length} réponses</span></div>
+    <table class="map"><thead><tr><th>Phrase du bulletin</th><th>Question du formulaire</th></tr></thead><tbody>
+      <tr><td>Prénom de l'élève</td><td><select id="fmName" aria-label="Colonne du prénom">${opts(P.cName)}</select></td></tr>
+      ${D.behs.map(b => `<tr><td>${esc(S.behMap[b.hk].label)}</td><td><select id="fm-${esc(b.hk)}" data-fm="${esc(b.id)}" aria-label="Question">${opts(P.map[b.id])}</select></td></tr>`).join("")}
+    </tbody></table>
+    ${unmatched.length ? `<div class="notice warn"><b>${unmatched.length} nom${unmatched.length>1?"s":""} à associer</b><table class="map">${unmatched.map(n => `<tr><td>${esc(n)}</td><td><select data-as="${esc(n)}" aria-label="Élève pour ${esc(n)}"><option value="">— ignorer —</option>${D.students.map(s=>`<option value="${esc(s.key)}">${esc(s.display)}</option>`).join("")}</select></td></tr>`).join("")}</table></div>` : `<div class="notice info">Tous les noms ont retrouvé leur élève.</div>`}
+    <div class="row"><button class="btn primary" id="fmOk">Importer ces réponses</button><button class="btn" id="fmCancel">Annuler</button></div></div>`;
+  $("#fmName").onchange = e => { P.cName = +e.target.value; renderFormsMap(); };
+  $$("[data-fm]").forEach(s => s.onchange = () => P.map[s.dataset.fm] = +s.value);
+  $$("[data-as]").forEach(s => s.onchange = () => P.assign[s.dataset.as] = s.value);
+  $("#fmCancel").onclick = () => { formsPending = null; renderFormsMap(); };
+  $("#fmOk").onclick = () => {
+    let n = 0;
+    P.rows.forEach(r => {
+      const name = [r[P.cName] ?? "", P.cFam >= 0 && P.cFam !== P.cName ? r[P.cFam] : ""].join(" ").trim();
+      const st = P.assign[name] ? D.students.find(s => s.key === P.assign[name]) : matchStudent(name);
+      if (!st) return;
+      D.behs.forEach(b => { const ci = P.map[b.id]; if (ci < 0) return; const lv = toLevel(r[ci]); if (lv){ (A[st.key] ||= {})[b.id] = { lv, src:"forms" }; n++; } });
+    });
+    saveAuto(); formsPending = null; renderFormsMap(); renderAuto(); toast(n + " réponses importées.");
+  };
+}
+
+/* ---------- mode élève ---------- */
+let holdTimer = null;
+function kidOpen(){ if (!D){ toast("Déposez d'abord un cahier de notes."); return; } $("#kid").hidden = false; kidNames(); }
+function kidClose(){ $("#kid").hidden = true; renderAuto(); }
+function kidExitButton(){ return `<button class="btn small hold" id="kidExit" title="Maintenir appuyé pour quitter">Enseignant : maintenir pour quitter<i></i></button>`; }
+function bindKidExit(){
+  const b = $("#kidExit"), bar = b.querySelector("i");
+  const start = e => { e.preventDefault(); bar.style.transition = "width 1.5s linear"; bar.style.width = "100%"; holdTimer = setTimeout(kidClose, 1500); };
+  const stop = () => { clearTimeout(holdTimer); bar.style.transition = "none"; bar.style.width = "0"; };
+  b.onpointerdown = start; b.onpointerup = stop; b.onpointerleave = stop;
+  b.onkeydown = e => { if (e.key === "Enter" || e.key === " ") start(e); }; b.onkeyup = stop;
+}
+function kidDone(st){ return D.behs.every(b => A[st.key] && A[st.key][b.id] && A[st.key][b.id].src === "kid"); }
+function kidNames(){
+  const sorted = [...D.students].sort((a,b) => a.display.localeCompare(b.display, "fr"));
+  $("#kid").innerHTML = `<div class="inner"><div class="bar"><h2>Qui es-tu ?</h2>${kidExitButton()}</div>
+    <div class="names">${sorted.map(s => `<button class="nm ${kidDone(s)?"done":""}" data-k="${esc(s.key)}">${esc(s.prenom || s.display)}</button>`).join("")}</div></div>`;
+  bindKidExit();
+  $$("#kid .nm").forEach(b => b.onclick = () => kidForm(D.students.find(s => s.key === b.dataset.k)));
+}
+function kidForm(st){
+  const levels = S.kidChoices === "5" ? ["V","VO","O","OR","R"] : ["V","O","R"];
+  const qs = D.behs.filter(b => (S.behMap[b.hk]||{}).group !== "hide");
+  $("#kid").innerHTML = `<div class="inner"><div class="bar"><h2>Bonjour ${esc(st.prenom || st.display)} !</h2>${kidExitButton()}</div>
+    <p class="lead" style="font-size:1.1rem">Pour chaque phrase, touche la boule qui te ressemble.</p>
+    ${qs.map(b => { const cur = A[st.key] && A[st.key][b.id] && A[st.key][b.id].src === "kid" ? A[st.key][b.id].lv : null;
+      return `<div class="q"><p>${esc(S.behMap[b.hk].label)}</p><div class="opts">${levels.map(l => `<button class="opt" data-b="${esc(b.id)}" data-l="${l}" aria-pressed="${cur===l}" aria-label="${LEVELS[l].label}">${ballSVG(l, 64)}</button>`).join("")}</div></div>`; }).join("")}
+    <div class="row"><button class="btn primary big" id="kidFinish">J'ai fini</button><button class="btn big" id="kidBack">Ce n'est pas moi</button></div></div>`;
+  bindKidExit();
+  $$("#kid .opt").forEach(o => o.onclick = () => {
+    (A[st.key] ||= {})[o.dataset.b] = { lv:o.dataset.l, src:"kid" }; saveAuto();
+    $$(`#kid .opt[data-b="${CSS.escape(o.dataset.b)}"]`).forEach(x => x.setAttribute("aria-pressed", x === o));
+  });
+  $("#kidBack").onclick = kidNames;
+  $("#kidFinish").onclick = () => {
+    const left = qs.filter(b => !(A[st.key] && A[st.key][b.id] && A[st.key][b.id].src === "kid")).length;
+    if (left){ toast(left === 1 ? "Il reste une phrase sans boule." : `Il reste ${left} phrases sans boule.`); return; }
+    kidNames(); toast("Merci " + (st.prenom || "") + " !");
+  };
+  window.scrollTo(0,0); $("#kid").scrollTop = 0;
+}
+
+/* ---------- rendu : commentaires ---------- */
+function renderComm(){
+  const v = $("#commView");
+  $("#commTitle").textContent = `Commentaires · ${S.classe || "classe"} · ${seasonObj().name} ${S.year}`;
+  if (!D){ v.innerHTML = `<p class="muted">Déposez d'abord un cahier de notes, même incomplet : la liste des élèves suffit pour commencer les commentaires.</p>`; $("#commCount").textContent = ""; return; }
+  if (!current || !D.students.some(s => s.key === current)) current = D.students[0].key;
+  const done = D.students.filter(s => (C[s.key]||"").trim()).length;
+  $("#commCount").textContent = `${done} / ${D.students.length} rédigés`;
+  const st = D.students.find(s => s.key === current);
+  const cr = compRows();
+  v.innerHTML = `<div class="comments">
+    <nav class="slist" aria-label="Élèves">${D.students.map(s => `<button class="sitem" data-k="${esc(s.key)}" aria-current="${s.key===current}"><span class="dot ${(C[s.key]||"").trim()?"on":""}"></span>${esc(s.display)}</button>`).join("")}</nav>
+    <div class="editor">
+      <h3>${esc(st.display)}</h3>
+      <div class="mini" aria-label="Résultats de l'élève">${cr.map(r => r.items.map(c => `<span>${ballSVG(st.comp[c.id],14)}${esc(S.compMap[c.hk].label)}</span>`).join("")).join("")}</div>
+      <label class="field">Commentaire général <textarea id="commText" placeholder="Rédigez ici le commentaire de la période…">${esc(C[st.key] || "")}</textarea></label>
+      <div class="row" style="justify-content:space-between"><span class="muted small" id="commLen"></span>
+        <div class="row"><button class="btn" id="commPrev">Élève précédent</button><button class="btn primary" id="commNext">Élève suivant</button></div></div>
+    </div></div>`;
+  const ta = $("#commText"), len = () => { const t = ta.value.trim(); $("#commLen").textContent = t ? `${t.split(/\s+/).length} mots · ${t.length} caractères` : "Pas encore de commentaire"; };
+  len();
+  ta.oninput = () => { C[st.key] = ta.value; saveComments(); len(); const d = $(`.sitem[data-k="${CSS.escape(st.key)}"] .dot`); d && d.classList.toggle("on", !!ta.value.trim()); $("#commCount").textContent = `${D.students.filter(s => (C[s.key]||"").trim()).length} / ${D.students.length} rédigés`; };
+  $$(".sitem").forEach(b => b.onclick = () => { current = b.dataset.k; renderComm(); $("#commText").focus(); });
+  const i = D.students.findIndex(s => s.key === current);
+  $("#commPrev").disabled = i === 0; $("#commNext").disabled = i === D.students.length - 1;
+  $("#commPrev").onclick = () => { current = D.students[i-1].key; renderComm(); $("#commText").focus(); };
+  $("#commNext").onclick = () => { current = D.students[i+1].key; renderComm(); $("#commText").focus(); };
+}
+
+/* ---------- rendu : générer ---------- */
+function renderGen(){
+  const ul = $("#checks"), items = [];
+  const add = (st, txt) => items.push(`<li><span class="st ${st}">${st==="ok"?"✓":"!"}</span><span>${txt}</span></li>`);
+  if (!D){ add("bad", "Aucun cahier de notes chargé."); ul.innerHTML = items.join(""); $("#btnGen").disabled = true; return; }
+  $("#btnGen").disabled = false;
+  add(D.isSample ? "warn" : "ok", D.isSample ? "Données d'exemple fictives : déposez votre cahier pour de vrais bulletins." : `${D.students.length} élèves lus dans « ${esc(D.file)} ».`);
+  add(S.classe ? "ok" : "warn", S.classe ? `Classe : ${esc(S.classe)} · ${esc(bulletinTitle())}` : "Indiquez la classe à l'étape 2.");
+  let miss = 0; D.comps.forEach(c => { if ((S.compMap[c.hk]||{}).domain === "hide") return; D.students.forEach(s => { if (!s.comp[c.id]) miss++; }); });
+  add(miss ? "warn" : "ok", miss ? `${miss} résultat${miss>1?"s":""} manquant${miss>1?"s":""} (${S.missing === "hide" ? "lignes masquées" : "affichés « — »"}).` : "Tous les résultats sont présents.");
+  const nc = D.students.filter(s => !(C[s.key]||"").trim()).length;
+  add(nc ? "warn" : "ok", nc ? `${nc} élève${nc>1?"s":""} sans commentaire (la page restera vierge pour un commentaire manuscrit).` : "Tous les commentaires sont rédigés.");
+  if (D.behs.length){ let na = 0; D.students.forEach(s => D.behs.forEach(b => { if (!selfVal(s,b).lv) na++; })); add(na ? "warn" : "ok", na ? `${na} réponse${na>1?"s":""} d'autoévaluation manquante${na>1?"s":""}.` : "Autoévaluations complètes."); }
+  add("ok", `Bannière : ${store.get("bg:banner:"+S.season, null) ? "la vôtre" : "par défaut"} (${esc(seasonObj().name.toLowerCase())}).`);
+  ul.innerHTML = items.join("");
+  const sel = $("#genWho"), prev = sel.value;
+  sel.innerHTML = `<option value="all">Toute la classe (${D.students.length})</option>` + D.students.map(s=>`<option value="${esc(s.key)}">${esc(s.display)}</option>`).join("");
+  sel.value = [...sel.options].some(o=>o.value===prev) ? prev : "all";
+}
+
+/* ---------- navigation ---------- */
+function show(tab){
+  $$(".step").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === tab));
+  $$(".panel[id^=tab-]").forEach(p => p.hidden = p.id !== "tab-" + tab);
+  ({ cahier:renderCahier, page:renderPage, auto:renderAuto, comm:renderComm, gen:renderGen })[tab]();
+  try{ localStorage.setItem("bg:tab", tab); }catch(e){}
+}
+function renderAll(){ renderCtx(); const t = $(".step[aria-selected=true]").dataset.tab; show(t); }
+function useData(d){
+  const prevClasse = S.classe;
+  D = d;
+  const m = (d.file || "").match(/^(?:\d{4}[_ -])?((?:P|M)\s?\d+(?:\s?[-–]?\s?\d)?\s?[A-Ca-c]?)(?=[_ .-]|$)/i);
+  if (m && !d.isSample) S.classe = m[1].replace(/\s+/g,"").toUpperCase();
+  if (d.isSample && !S.classe) S.classe = "P2";
+  saveSettings(); loadWork();
+  if (S.classe !== prevClasse) toast(`Classe détectée : ${S.classe}. Modifiable à l'étape 2.`);
+  renderAll();
+}
+document.addEventListener("click", e => { const g = e.target.closest("[data-go]"); if (g) show(g.dataset.go); });
+$$(".step").forEach(b => b.onclick = () => show(b.dataset.tab));
+
+/* ---------- fichiers : dépôt ---------- */
+function bindDrop(zoneSel, inputSel, handler){
+  const z = $(zoneSel), inp = $(inputSel);
+  inp.onchange = () => { if (inp.files[0]) handler(inp.files[0]); inp.value = ""; };
+  z.addEventListener("dragover", e => { e.preventDefault(); z.classList.add("over"); });
+  z.addEventListener("dragleave", () => z.classList.remove("over"));
+  z.addEventListener("drop", e => { e.preventDefault(); z.classList.remove("over"); const f = e.dataTransfer.files[0]; if (f) handler(f); });
+}
+bindDrop("#dropXlsx", "#fileXlsx", async f => {
+  $("#loadMsg").innerHTML = `<p class="muted">Lecture de ${esc(f.name)}…</p>`;
+  try{ useData(await loadWorkbook(f)); $("#fileName").textContent = f.name; $("#loadMsg").innerHTML = ""; }
+  catch(err){ console.error(err); $("#loadMsg").innerHTML = `<div class="notice bad"><b>Impossible de lire ce fichier.</b><span>${esc(err.message)}</span></div>`; }
+});
+bindDrop("#dropForms", "#fileForms", async f => {
+  if (!D){ toast("Déposez d'abord le cahier de notes (étape 1)."); return; }
+  try{ await importForms(f); } catch(err){ console.error(err); toast("Lecture impossible : " + err.message); }
+});
+$("#btnKid").onclick = kidOpen;
+$("#btnClearAuto").onclick = () => { if (!D) return; const b = $("#btnClearAuto");
+  if (b.dataset.confirm){ A = {}; saveAuto(); renderAuto(); delete b.dataset.confirm; b.textContent = "Effacer les réponses importées"; toast("Réponses importées effacées."); }
+  else { b.dataset.confirm = "1"; b.textContent = "Confirmer l'effacement"; setTimeout(()=>{ delete b.dataset.confirm; b.textContent = "Effacer les réponses importées"; }, 4000); } };
+
+/* ---------- sauvegarde ---------- */
+$("#btnBackup").onclick = () => {
+  const data = { app:"bulletins-gistoux", version:1, classe:S.classe, season:S.season, year:S.year, savedAt:new Date().toISOString(), comments:C, auto:A };
+  download(new Blob([JSON.stringify(data, null, 1)], {type:"application/json"}), `Sauvegarde_${(S.classe||"classe").replace(/\W+/g,"")}_${seasonObj().name}_${S.year}.json`);
+};
+$("#fileRestore").onchange = async e => {
+  const f = e.target.files[0]; if (!f) return; e.target.value = "";
+  try{
+    const d = JSON.parse(await f.text()); if (d.app !== "bulletins-gistoux") throw new Error("Ce n'est pas une sauvegarde de Bulletins Gistoux.");
+    S.classe = d.classe || S.classe; S.season = d.season || S.season; S.year = d.year || S.year; saveSettings(); loadWork();
+    let n = 0; for (const [k,v] of Object.entries(d.comments || {})) if (String(v).trim() && !(C[k]||"").trim()){ C[k] = v; n++; } else if (String(v).trim() && C[k] !== v){ C[k] = v; n++; }
+    for (const [k,v] of Object.entries(d.auto || {})) A[k] = Object.assign({}, A[k], v);
+    saveComments(); saveAuto(); renderAll(); toast(`Sauvegarde restaurée : ${n} commentaire${n>1?"s":""}.`);
+  }catch(err){ toast("Restauration impossible : " + err.message); }
+};
+
+/* ============================================================
+   BANNIÈRES PAR DÉFAUT (dessinées, sans image externe)
+   ============================================================ */
+function drawBanner(season, W, H){
+  const cv = document.createElement("canvas"); cv.width = W; cv.height = H; const g = cv.getContext("2d");
+  let seed = {automne:11, hiver:23, printemps:5, ete:42}[season] || 3;
+  const r = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const rr = (a,b) => a + r()*(b-a);
+  if (season === "printemps"){
+    for (let i = 0; i < 420; i++){ const x = rr(0,W), h = rr(40,150); g.strokeStyle = ["#5DBB46","#7CCB5A","#3E9A3A","#A5D86B"][i%4]; g.lineWidth = rr(2,5); g.beginPath(); g.moveTo(x,H); g.quadraticCurveTo(x+rr(-20,20), H-h*0.6, x+rr(-30,30), H-h); g.stroke(); }
+    for (let i = 0; i < 46; i++){ const x = rr(20,W-20), y = H - rr(60,200), pr = rr(9,22), col = ["#E94B8A","#F6C531","#8E6CE0","#4FA3E8","#FF7A45","#F25C5C"][i%6];
+      g.strokeStyle = "#3E9A3A"; g.lineWidth = 3; g.beginPath(); g.moveTo(x, y); g.lineTo(x + rr(-8,8), H); g.stroke();
+      g.fillStyle = col; for (let k = 0; k < 6; k++){ const a = k*Math.PI/3; g.beginPath(); g.ellipse(x+Math.cos(a)*pr, y+Math.sin(a)*pr, pr*0.75, pr*0.45, a, 0, 7); g.fill(); }
+      g.fillStyle = "#FFE066"; g.beginPath(); g.arc(x,y,pr*0.5,0,7); g.fill(); }
+    for (let i = 0; i < 5; i++){ const x = rr(100,W-100), y = rr(30,140), s = rr(12,20), col = ["#F6A531","#4FA3E8","#E94B8A"][i%3]; g.fillStyle = col;
+      [[-1,-1],[1,-1],[-0.8,0.7],[0.8,0.7]].forEach(([dx,dy]) => { g.beginPath(); g.ellipse(x+dx*s*0.8, y+dy*s*0.6, s*(dy<0?0.9:0.6), s*(dy<0?0.7:0.5), 0, 0, 7); g.fill(); });
+      g.fillStyle = "#333"; g.fillRect(x-1.5, y-s*0.9, 3, s*1.8); }
+  } else if (season === "ete"){
+    g.fillStyle = "#F8D98A"; g.beginPath(); g.moveTo(0,H); g.lineTo(0,H-70); for (let x = 0; x <= W; x += 60) g.quadraticCurveTo(x+30, H-90+rr(-10,10), x+60, H-70); g.lineTo(W,H); g.fill();
+    for (let band = 0; band < 3; band++){ g.strokeStyle = ["#2C8FD6","#4FB3E8","#8FD3F4"][band]; g.lineWidth = 7; g.beginPath(); const y0 = H-110-band*26; for (let x = -40; x <= W+40; x += 80){ g.moveTo(x,y0); g.quadraticCurveTo(x+20,y0-22,x+40,y0); g.quadraticCurveTo(x+60,y0+22,x+80,y0); } g.stroke(); }
+    const sx = 150, sy = 120; g.fillStyle = "#FFC21A"; g.beginPath(); g.arc(sx,sy,62,0,7); g.fill(); g.strokeStyle = "#FFB000"; g.lineWidth = 8; g.lineCap = "round";
+    for (let k = 0; k < 12; k++){ const a = k*Math.PI/6; g.beginPath(); g.moveTo(sx+Math.cos(a)*80, sy+Math.sin(a)*80); g.lineTo(sx+Math.cos(a)*112, sy+Math.sin(a)*112); g.stroke(); }
+    for (let i = 0; i < 14; i++){ const x = rr(300,W-40), y = H - rr(15,55); g.fillStyle = ["#F28C6B","#FFFFFF","#E9A0C8"][i%3]; g.beginPath(); g.ellipse(x,y,rr(8,14),rr(6,9),rr(0,3),0,7); g.fill(); }
+    const px = W-280; g.strokeStyle = "#7A5A3A"; g.lineWidth = 7; g.beginPath(); g.moveTo(px, H-40); g.lineTo(px+30, H-250); g.stroke();
+    ["#E94B4B","#FFFFFF","#E94B4B","#FFFFFF"].forEach((c,k) => { g.fillStyle = c; g.beginPath(); g.moveTo(px+30, H-262); const a0 = Math.PI + k*Math.PI/4, a1 = a0 + Math.PI/4; g.arc(px+30, H-250, 130, a0, a1); g.closePath(); g.fill(); });
+  } else if (season === "automne"){
+    for (let i = 0; i < 160; i++){ const x = rr(0,W), y = H - rr(0,40); drawLeaf(g, x, y, rr(12,22), rr(0,6.3), ["#C8501E","#E08A1E","#A33A1A","#D9B13B","#8C5A2B"][i%5]); }
+    for (let i = 0; i < 34; i++){ const x = rr(0,W), y = rr(20,H-80); drawLeaf(g, x, y, rr(14,26), rr(0,6.3), ["#C8501E","#E08A1E","#A33A1A","#D9B13B"][i%4]); }
+    for (let i = 0; i < 6; i++){ const x = rr(80,W-80), y = H - rr(30,55); g.fillStyle = "#9A6A3A"; g.beginPath(); g.ellipse(x,y,11,14,0,0,7); g.fill(); g.fillStyle = "#6B4423"; g.beginPath(); g.ellipse(x,y-12,13,7,0,0,7); g.fill(); }
+  } else {
+    g.fillStyle = "#EAF4FB"; g.strokeStyle = "#B9D6EC"; g.lineWidth = 4;
+    g.beginPath(); g.moveTo(0,H); for (let x = 0; x <= W; x += 200) g.quadraticCurveTo(x+100, H-150+rr(-30,30), x+200, H-90); g.lineTo(W,H); g.closePath(); g.fill(); g.stroke();
+    for (let i = 0; i < 9; i++){ const x = 80 + i*(W-160)/8 + rr(-30,30), base = H - rr(70,110), h = rr(130,210), w = h*0.55;
+      g.fillStyle = "#2F6B4F"; for (let k = 0; k < 3; k++){ const y = base - k*h*0.28; g.beginPath(); g.moveTo(x - w/2*(1-k*0.22), y); g.lineTo(x + w/2*(1-k*0.22), y); g.lineTo(x, y - h*0.45); g.closePath(); g.fill(); }
+      g.fillStyle = "#FFFFFF"; for (let k = 0; k < 3; k++){ const y = base - k*h*0.28 - h*0.3; g.beginPath(); g.moveTo(x - w*0.16, y+8); g.lineTo(x + w*0.16, y+8); g.lineTo(x, y - h*0.15); g.closePath(); g.fill(); }
+      g.fillStyle = "#6B4423"; g.fillRect(x-6, base, 12, 22); }
+    g.strokeStyle = "#8EC3E6"; g.lineCap = "round";
+    for (let i = 0; i < 40; i++){ const x = rr(10,W-10), y = rr(10,H-140), s = rr(6,16); g.lineWidth = s > 11 ? 3 : 2;
+      for (let k = 0; k < 3; k++){ const a = k*Math.PI/3; g.beginPath(); g.moveTo(x-Math.cos(a)*s, y-Math.sin(a)*s); g.lineTo(x+Math.cos(a)*s, y+Math.sin(a)*s); g.stroke(); } }
+  }
+  return cv;
+}
+function drawLeaf(g, x, y, s, a, col){
+  g.save(); g.translate(x,y); g.rotate(a); g.fillStyle = col; g.beginPath(); g.moveTo(-s,0); g.quadraticCurveTo(0,-s*0.75,s,0); g.quadraticCurveTo(0,s*0.75,-s,0); g.fill();
+  g.strokeStyle = "#00000033"; g.lineWidth = 1.5; g.beginPath(); g.moveTo(-s,0); g.lineTo(s,0); g.stroke(); g.restore();
+}
+
+/* ============================================================
+   WORD (.docx) : écriture
+   ============================================================ */
+const crcTable = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++){ let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(u8){ let c = 0xFFFFFFFF; for (let i = 0; i < u8.length; i++) c = crcTable[(c ^ u8[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function zipStore(files){
+  const enc = new TextEncoder(), parts = [], central = []; let off = 0;
+  const now = new Date(), dt = ((now.getFullYear()-1980)<<9)|((now.getMonth()+1)<<5)|now.getDate(), tm = (now.getHours()<<11)|(now.getMinutes()<<5)|(now.getSeconds()>>1);
+  for (const f of files){
+    const name = enc.encode(f.name), data = typeof f.data === "string" ? enc.encode(f.data) : f.data, crc = crc32(data);
+    const h = new DataView(new ArrayBuffer(30));
+    h.setUint32(0,0x04034b50,true); h.setUint16(4,20,true); h.setUint16(6,0x0800,true); h.setUint16(8,0,true); h.setUint16(10,tm,true); h.setUint16(12,dt,true);
+    h.setUint32(14,crc,true); h.setUint32(18,data.length,true); h.setUint32(22,data.length,true); h.setUint16(26,name.length,true); h.setUint16(28,0,true);
+    parts.push(new Uint8Array(h.buffer), name, data);
+    const c = new DataView(new ArrayBuffer(46));
+    c.setUint32(0,0x02014b50,true); c.setUint16(4,20,true); c.setUint16(6,20,true); c.setUint16(8,0x0800,true); c.setUint16(10,0,true); c.setUint16(12,tm,true); c.setUint16(14,dt,true);
+    c.setUint32(16,crc,true); c.setUint32(20,data.length,true); c.setUint32(24,data.length,true); c.setUint16(28,name.length,true); c.setUint32(42,off,true);
+    central.push(new Uint8Array(c.buffer), name);
+    off += 30 + name.length + data.length;
+  }
+  const csize = central.reduce((s,p)=>s+p.length,0), e = new DataView(new ArrayBuffer(22));
+  e.setUint32(0,0x06054b50,true); e.setUint16(8,files.length,true); e.setUint16(10,files.length,true); e.setUint32(12,csize,true); e.setUint32(16,off,true);
+  return new Blob([...parts, ...central, new Uint8Array(e.buffer)], { type:"application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+}
+function canvasBytes(cv, type="image/png"){ return new Promise(res => cv.toBlob(b => b.arrayBuffer().then(x => res(new Uint8Array(x))), type)); }
+function ballCanvas(lv){
+  const n = 120, cv = document.createElement("canvas"); cv.width = cv.height = n; const g = cv.getContext("2d"), r = n/2 - 4, [a,b] = LEVELS[lv].c;
+  g.fillStyle = a; g.beginPath(); g.moveTo(n/2, n/2); g.arc(n/2, n/2, r, Math.PI/2, Math.PI*1.5); g.closePath(); g.fill();
+  g.fillStyle = b; g.beginPath(); g.moveTo(n/2, n/2); g.arc(n/2, n/2, r, -Math.PI/2, Math.PI/2); g.closePath(); g.fill();
+  g.strokeStyle = "rgba(0,0,0,.35)"; g.lineWidth = 3; g.beginPath(); g.arc(n/2, n/2, r, 0, 7); g.stroke();
+  return cv;
+}
+async function imageInfo(dataUrl){
+  const im = new Image(); await new Promise((res, rej) => { im.onload = res; im.onerror = rej; im.src = dataUrl; });
+  const isPng = dataUrl.startsWith("data:image/png"), bin = atob(dataUrl.split(",")[1]), u8 = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+  return { bytes:u8, ext: isPng ? "png" : "jpeg", w: im.naturalWidth, h: im.naturalHeight };
+}
+
+/* ---- briques WordprocessingML ---- */
+const W_NS = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"';
+const PAGE = { w:11906, h:16838, mt:964, mb:907, ml:1134, mr:1134 }; const TW = PAGE.w - PAGE.ml - PAGE.mr;
+const EMU = tw => Math.round(tw * 635);
+let drawId = 1;
+function R(text, o={}){
+  const pr = (o.b?"<w:b/><w:bCs/>":"") + (o.i?"<w:i/><w:iCs/>":"") + (o.color?`<w:color w:val="${o.color}"/>`:"") + (o.sz?`<w:sz w:val="${o.sz}"/><w:szCs w:val="${o.sz}"/>`:"");
+  return `<w:r>${pr?`<w:rPr>${pr}</w:rPr>`:""}<w:t xml:space="preserve">${esc(text)}</w:t></w:r>`;
+}
+const TAB = `<w:r><w:tab/></w:r>`;
+function P(runs, o={}){
+  let pr = "";
+  if (o.keepNext) pr += "<w:keepNext/>";
+  if (o.keepLines) pr += "<w:keepLines/>";
+  if (o.border) pr += `<w:pBdr><w:bottom w:val="single" w:sz="8" w:space="4" w:color="${o.border}"/></w:pBdr>`;
+  if (o.tabs) pr += `<w:tabs>${o.tabs.map(t=>`<w:tab w:val="${t.v}" w:pos="${t.pos}"/>`).join("")}</w:tabs>`;
+  pr += `<w:spacing w:before="${o.before||0}" w:after="${o.after||0}"${o.line?` w:line="${o.line}" w:lineRule="auto"`:""}/>`;
+  if (o.jc) pr += `<w:jc w:val="${o.jc}"/>`;
+  if (o.sect) pr += o.sect;
+  return `<w:p><w:pPr>${pr}</w:pPr>${runs||""}</w:p>`;
+}
+function IMG(rid, cx, cy, name){
+  const id = drawId++;
+  return `<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${cx}" cy="${cy}"/><wp:docPr id="${id}" name="${name} ${id}"/><wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic><pic:nvPicPr><pic:cNvPr id="${id}" name="${name}"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="${rid}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`;
+}
+const BALL_EMU = 205000;
+const ballRun = lv => lv ? IMG("rIdBall" + lv, BALL_EMU, BALL_EMU, "boule") : R("—", { color:"808080" });
+function borders(o){ return `<w:tcBorders>${["top","left","bottom","right"].map(s => o[s] ? `<w:${s} w:val="single" w:sz="${o[s][0]}" w:space="0" w:color="${o[s][1]}"/>` : `<w:${s} w:val="nil"/>`).join("")}</w:tcBorders>`; }
+function TC(content, w, o={}){
+  return `<w:tc><w:tcPr><w:tcW w:w="${w}" w:type="dxa"/>${o.span?`<w:gridSpan w:val="${o.span}"/>`:""}${borders(o.b||{})}${o.fill?`<w:shd w:val="clear" w:color="auto" w:fill="${o.fill}"/>`:""}<w:vAlign w:val="center"/></w:tcPr>${content}</w:tc>`;
+}
+function TR(cells, o={}){ return `<w:tr><w:trPr><w:cantSplit/>${o.h?`<w:trHeight w:val="${o.h}"/>`:""}${o.header?"<w:tblHeader/>":""}</w:trPr>${cells}</w:tr>`; }
+function TBL(cols, rows){
+  return `<w:tbl><w:tblPr><w:tblW w:w="${cols.reduce((a,b)=>a+b,0)}" w:type="dxa"/><w:jc w:val="center"/><w:tblLayout w:type="fixed"/><w:tblCellMar><w:left w:w="100" w:type="dxa"/><w:right w:w="100" w:type="dxa"/></w:tblCellMar><w:tblLook w:val="0000"/></w:tblPr><w:tblGrid>${cols.map(c=>`<w:gridCol w:w="${c}"/>`).join("")}</w:tblGrid>${rows.join("")}</w:tbl>`;
+}
+function sectPr(footerRid, type){
+  return `<w:sectPr><w:footerReference w:type="default" r:id="${footerRid}"/><w:type w:val="${type}"/><w:pgSz w:w="${PAGE.w}" w:h="${PAGE.h}"/><w:pgMar w:top="${PAGE.mt}" w:right="${PAGE.mr}" w:bottom="${PAGE.mb}" w:left="${PAGE.ml}" w:header="567" w:footer="227" w:gutter="0"/></w:sectPr>`;
+}
+
+function studentXML(st, banner){
+  const out = [], LINE = "BFBFBF";
+  const cw = [Math.round(TW*0.68), TW - Math.round(TW*0.68)];
+  // en-tête
+  out.push(P(R(st.display, {b:true, sz:30}) + TAB + R(S.classe, {b:true, sz:30}), { tabs:[{v:"right", pos:TW}], after:60 }));
+  out.push(P(R(bulletinTitle(), {b:true, sz:44, color: seasonObj().color}), { jc:"center", after:80 }));
+  if (S.intro.trim()) out.push(P(R(S.intro.trim(), {i:true, sz:20, color:"404040"}), { jc:"center", after:200 }));
+  let dash = false;
+  // domaines
+  for (const { dom, items } of compRows()){
+    const vis = items.filter(c => st.comp[c.id] || S.missing !== "hide"); if (!vis.length) continue;
+    const rows = [TR(TC(P(R(dom.label, {b:true, sz:24, color:dom.text}), {jc:"center", keepNext:true, before:40, after:40}), TW, { span:2, fill:dom.fill, b:{top:[6,"404040"],bottom:[6,"404040"],left:[6,"404040"],right:[6,"404040"]} }))];
+    vis.forEach((c, i) => {
+      const lv = st.comp[c.id]; if (!lv) dash = true;
+      const last = i === vis.length - 1, kn = !last;
+      rows.push(TR(
+        TC(P(R(S.compMap[c.hk].label, {sz:22}), {jc:"center", keepNext:kn, before:30, after:30}), cw[0], { b:{bottom:[4,LINE], right:[4,LINE]} }) +
+        TC(P(ballRun(lv), {jc:"center", keepNext:kn, before:20, after:20}), cw[1], { b:{bottom:[4,LINE]} }), { h:380 }));
+    });
+    out.push(TBL(cw, rows)); out.push(P("", { after:120 }));
+  }
+  // comportement
+  const br = behRows();
+  if (br.length){
+    const bw = [Math.round(TW*0.64), Math.round(TW*0.18)]; bw.push(TW - bw[0] - bw[1]);
+    const rows = []; const hb = {top:[6,"404040"],bottom:[6,"404040"],left:[6,"404040"],right:[6,"404040"]};
+    br.forEach(({ g, items }, gi) => {
+      const hdr = t => P(R(t, {b:true, sz:22, color:"FFFFFF"}), {jc:"center", keepNext:true, before:40, after:40});
+      rows.push(TR(TC(hdr(g.label), bw[0], { fill:BEH_FILL, b:hb }) + TC(hdr("Élève"), bw[1], { fill:BEH_FILL, b:hb }) + TC(hdr("Enseignant"), bw[2], { fill:BEH_FILL, b:hb })));
+      items.forEach((b, i) => {
+        const e = selfVal(st, b).lv, t = st.beh[b.id].t; if (!e || !t) dash = true;
+        const kn = i < items.length - 1 || gi < br.length - 1 && i === 0;
+        rows.push(TR(
+          TC(P(R(S.behMap[b.hk].label, {sz:21}), {keepNext:kn, before:30, after:30}), bw[0], { b:{bottom:[4,LINE], right:[4,LINE]} }) +
+          TC(P(ballRun(e), {jc:"center", keepNext:kn}), bw[1], { b:{bottom:[4,LINE], right:[4,LINE]} }) +
+          TC(P(ballRun(t), {jc:"center", keepNext:kn}), bw[2], { b:{bottom:[4,LINE]} }), { h:380 }));
+      });
+    });
+    out.push(P("", { after:60 })); out.push(TBL(bw, rows));
+  }
+  if (dash && S.missing !== "hide") out.push(P(R("— : non évalué durant cette période.", {i:true, sz:18, color:"808080"}), { before:120 }));
+  else if (dash) out.push(P(R("— : pas encore de réponse.", {i:true, sz:18, color:"808080"}), { before:120 }));
+  out.push(P("", { sect: sectPr("rIdFtrEmpty", S.odd ? "oddPage" : "nextPage") }));
+
+  // verso : commentaire
+  const blue = "2F5496";
+  out.push(P(R("Commentaire général", {sz:40, color:blue}), { jc:"center", border:blue, after:80 }));
+  out.push(P(R(`${st.display} – ${S.classe} · ${seasonObj().name} ${S.year}`, {sz:26, color:blue}), { jc:"center", after:360 }));
+  const txt = (C[st.key] || "").trim();
+  if (txt) txt.split(/\n+/).forEach(par => out.push(P(R(par.trim(), {sz:24}), { line:300, after:160 })));
+  else for (let i = 0; i < 10; i++) out.push(P("", { line:360 }));
+  const sw = [Math.round(TW/3), Math.round(TW/3)]; sw.push(TW - sw[0] - sw[1]);
+  const sigs = S.sigs.map((t, i) => TC(P(R(t, {sz:20, b:true}), {jc:"center", keepNext:true}), sw[i])).join("");
+  const blank = S.sigs.map((t, i) => TC(P(""), sw[i], { b:{bottom:[4,"A6A6A6"]} })).join("");
+  out.push(P("", { before:240, keepNext:true }));
+  out.push(TBL(sw, [TR(sigs), TR(blank, { h:1200 })]));
+  return out.join("");
+}
+
+async function generateDocx(){
+  const who = $("#genWho").value, list = who === "all" ? D.students : D.students.filter(s => s.key === who);
+  drawId = 1;
+  const balls = {}; for (const lv of Object.keys(LEVELS)) balls[lv] = await canvasBytes(ballCanvas(lv));
+  const bUrl = store.get("bg:banner:"+S.season, null) || bannerCache["custom:"+S.season] || bannerURL(S.season);
+  const banner = await imageInfo(bUrl);
+  const bW = EMU(TW), bH = Math.min(Math.round(bW * banner.h / banner.w), 2300000), bW2 = Math.round(bH * banner.w / banner.h);
+  let body = "";
+  list.forEach((st, i) => {
+    body += studentXML(st, banner);
+    // la dernière section se termine par le sectPr du body
+    body += i === list.length - 1 ? P("") + sectPr("rIdFtrBanner", "nextPage") : P("", { sect: sectPr("rIdFtrBanner", "nextPage") });
+  });
+  const fontXml = `<w:rFonts w:ascii="${esc(S.font)}" w:hAnsi="${esc(S.font)}" w:cs="${esc(S.font)}" w:eastAsia="${esc(S.font)}"/>`;
+  const files = [
+    { name:"[Content_Types].xml", data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Default Extension="jpeg" ContentType="image/jpeg"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/><Override PartName="/word/footer2.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/></Types>` },
+    { name:"_rels/.rels", data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/></Relationships>` },
+    { name:"docProps/core.xml", data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>${esc(bulletinTitle() + " – " + S.classe)}</dc:title><dc:creator>Bulletins Gistoux</dc:creator><dcterms:created xsi:type="dcterms:W3CDTF">${new Date().toISOString().replace(/\.\d+Z$/,"Z")}</dcterms:created></cp:coreProperties>` },
+    { name:"word/_rels/document.xml.rels", data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rIdStyles" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rIdSettings" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/><Relationship Id="rIdFtrEmpty" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/><Relationship Id="rIdFtrBanner" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer2.xml"/>${Object.keys(LEVELS).map(lv=>`<Relationship Id="rIdBall${lv}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/boule_${lv}.png"/>`).join("")}</Relationships>` },
+    { name:"word/_rels/footer2.xml.rels", data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rIdBanner" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/banniere.${banner.ext}"/></Relationships>` },
+    { name:"word/styles.xml", data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles ${W_NS}><w:docDefaults><w:rPrDefault><w:rPr>${fontXml}<w:sz w:val="22"/><w:szCs w:val="22"/><w:lang w:val="fr-BE"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="0" w:line="240" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style><w:style w:type="table" w:default="1" w:styleId="TableNormal"><w:name w:val="Normal Table"/><w:tblPr><w:tblInd w:w="0" w:type="dxa"/><w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:left w:w="108" w:type="dxa"/><w:bottom w:w="0" w:type="dxa"/><w:right w:w="108" w:type="dxa"/></w:tblCellMar></w:tblPr></w:style></w:styles>` },
+    { name:"word/settings.xml", data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:settings ${W_NS}><w:defaultTabStop w:val="708"/><w:compat><w:compatSetting w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="15"/></w:compat></w:settings>` },
+    { name:"word/footer1.xml", data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:ftr ${W_NS}>${P("")}</w:ftr>` },
+    { name:"word/footer2.xml", data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:ftr ${W_NS}>${P(IMG("rIdBanner", bW2, bH, "banniere"), { jc:"center" })}</w:ftr>` },
+    { name:"word/document.xml", data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document ${W_NS}><w:body>${body}</w:body></w:document>` },
+    ...Object.keys(LEVELS).map(lv => ({ name:`word/media/boule_${lv}.png`, data:balls[lv] })),
+    { name:`word/media/banniere.${banner.ext}`, data:banner.bytes }
+  ];
+  return { blob: zipStore(files), count: list.length };
+}
+$("#btnGen").onclick = async () => {
+  const b = $("#btnGen"); b.disabled = true; $("#genMsg").textContent = "Création du document…";
+  try{
+    const { blob, count } = await generateDocx();
+    const who = $("#genWho").value;
+    const nm = who === "all" ? "" : "_" + (D.students.find(s=>s.key===who).display.replace(/\W+/g,"_"));
+    download(blob, `Bulletins_${(S.classe||"classe").replace(/\W+/g,"")}_${seasonObj().name}_${S.year}${nm}.docx`);
+    $("#genMsg").textContent = `${count} bulletin${count>1?"s":""} créé${count>1?"s":""}. Le fichier se trouve dans vos téléchargements.`;
+  }catch(err){ console.error(err); $("#genMsg").textContent = "La création a échoué : " + err.message; }
+  b.disabled = false;
+};
+
+/* ---------- détection de l'onglet Teams ---------- */
+const FRAMED = (() => { try { return window.self !== window.top; } catch(e) { return true; } })();
+if (FRAMED){
+  $("#framed").hidden = false; const u = $("#outUrl"); u.value = location.href.split("#")[0];
+  $("#copyUrl").onclick = async () => {
+    try { await navigator.clipboard.writeText(u.value); toast("Adresse copiée : collez-la dans Edge (Ctrl+V)."); }
+    catch(e){ u.focus(); u.select(); try { document.execCommand("copy"); toast("Adresse copiée : collez-la dans Edge (Ctrl+V)."); } catch(_) { toast("Appuyez sur Ctrl+C pour copier l'adresse sélectionnée."); } }
+  };
+}
+/* ---------- démarrage ---------- */
+bindSettings(); loadWork();
+renderAll();
+const lastTab = (()=>{ try{ return localStorage.getItem("bg:tab"); }catch(e){ return null; } })();
+if (lastTab && lastTab !== "cahier" && D) show(lastTab);
+</script>
+</body>
+</html>
